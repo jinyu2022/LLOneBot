@@ -8,32 +8,40 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout
+    - name: Checkout
       uses: actions/checkout@v3
 
-    - name: setup node
+    - name: Setup Node
       uses: actions/setup-node@v2
       with:
         node-version: 18
 
-    - name: install dependenies
+    - name: Install Dependencies
       run: |
         export ELECTRON_SKIP_BINARY_DOWNLOAD=1
         npm install
 
-    - name: build
+    - name: Build
       run: npm run build
 
-    - name: zip
+    - name: Zip
       run: |
         sudo apt install zip -y
         cp manifest.json ./dist/manifest.json
         cd ./dist/
-        zip -r ../LLOneBot.zip ./* 
-    
-    - name: publish
-      uses: ncipollo/release-action@v1
+        zip -r ../LLOneBot.zip ./*
+
+    - name: Create Release Draft
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        artifacts: "LLOneBot.zip"
+        tag_name: ${{ github.ref }}
         draft: true
-        token: ${{ secrets.RELEASE_TOKEN }}
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: LLOneBot.zip
+        path: LLOneBot.zip
